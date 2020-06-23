@@ -1,7 +1,9 @@
 const clientID = 'u837pub66ryla2sfkh19iqp6rudq44';
 const twitchChannelName = 'strager';
 
+const getChannelIDURL = `https://api.twitch.tv/helix/search/channels?query=${twitchChannelName}&first=1`
 const getUsersURL = 'https://api.twitch.tv/helix/users';
+
 const checkSubscriptionURL = (userID, channelID) => {
   return `https://api.twitch.tv/kraken/users/${userID}/subscriptions/${channelID}`;
 };
@@ -22,7 +24,7 @@ if (!(rawHash === '')) {
     (async () => {
       let accessToken = hash.access_token;
 
-      let channelID = await getChannelID(accessToken, twitchChannelName);
+      let channelID = await getChannelID(accessToken);
       if (channelID === -1) {
         alert('Channel does not exist.');
         return;
@@ -43,8 +45,8 @@ if (!(rawHash === '')) {
   }
 }
 
-async function getChannelID(accessToken, query) {
-  let response = await fetch(`https://api.twitch.tv/helix/search/channels?query=${query}&first=1`, {
+async function getChannelID(accessToken) {
+  let response = await fetch(getChannelIDURL, {
     headers: {
       'client-id': clientID,
       'authorization': `Bearer ${accessToken}`
@@ -75,23 +77,25 @@ async function getUserID(accessToken) {
   if (response.status === 200) {
     let rawJson = await response.json();
     let json = rawJson.data[0];
-    return json.id;
+    if (rawJson.hasOwnProperty('data')) {
+      let json = rawJson.data[0];
+      if (json !== undefined) {
+        return json.id;
+      }
+    }
   }
 
   return -1;
 }
 
 async function isSubscribed(accessToken, userID, channelID) {
-  let url = checkSubscriptionURL(userID, channelID);
-  let response = await fetch(url, {
+  let response = await fetch(checkSubscriptionURL(userID, channelID), {
     headers: {
       'client-id': clientID,
       'authorization': `OAuth ${accessToken}`,
       'accept': 'application/vnd.twitchtv.v5+json'
     }
   });
-
-  let rawJson = await response.json();
 
   if (response.status === 200) {
     return true;
