@@ -23,23 +23,17 @@
         let accessToken = hash.access_token;
 
         let channelID = await getChannelID(accessToken);
-        if (channelID === -1) {
-          console.log('Unauthorized');
-          return;
-        } else if (channelID === -2) {
-          console.log('Channel not found');
-          return;
-        } else if (channelID === -3) {
-          console.log('Twitch might be down');
+        checkHelixResult(channelID);
+        if (channelID < 0) {
           return;
         }
 
         let userID = await getUserID(accessToken);
-        if (userID === -1) {
-          console.log('Authentication failed.');
+        checkHelixResult(userID);
+        if (userID < 0) {
           return;
         }
-        
+
         if (await isSubscribed(accessToken, userID, channelID)) {
           console.log(`User is subscribed to ${twitchChannelName}.`);
         } else {
@@ -47,6 +41,16 @@
         }
 
       })();
+    }
+  }
+
+  function checkHelixResult(result) {
+    if (result === -1) {
+      console.log('Unauthorized');
+    } else if (result === -2) {
+      console.log('Channel not found');
+    } else if (result === -3) {
+      console.log('Twitch might be down');
     }
   }
 
@@ -66,14 +70,12 @@
     });
   }
 
-  async function getChannelID(accessToken) {
-    let response = await helixFetch(searchChannelURL, accessToken);
-
+  async function getIDFromHelixList(response) {
     if (response.status === 200) {
       let rawJson = await response.json();
       if (rawJson.hasOwnProperty('data')) {
         let json = rawJson.data[0];
-        if (json == undefined) {
+        if (json === undefined) {
           return -2;
         } else {
           return json.id;
@@ -86,21 +88,19 @@
     return -3;
   }
 
+  async function getChannelID(accessToken) {
+    let response = await helixFetch(searchChannelURL, accessToken);
+
+    let result = getIDFromHelixList(response);
+
+    return result;
+  }
+
   async function getUserID(accessToken) {
     let response = await helixFetch(getUsersURL, accessToken);
 
-    if (response.status === 200) {
-      let rawJson = await response.json();
-      let json = rawJson.data[0];
-      if (rawJson.hasOwnProperty('data')) {
-        let json = rawJson.data[0];
-        if (json !== undefined) {
-          return json.id;
-        }
-      }
-    }
-
-    return -1;
+    let result = getIDFromHelixList(response);
+    return result;
   }
 
   async function isSubscribed(accessToken, userID, channelID) {
