@@ -22,6 +22,9 @@ https://id.twitch.tv/oauth2/authorize
 The client ID comes from that application in step 1.
 The same applies for the redirect URL.
 
+For my code to work, you will have to put that client ID
+in the variable at the top called clientID.
+
 Step 3:
 
 At this point, the user has been sent over to the Twitch
