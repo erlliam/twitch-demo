@@ -1,6 +1,6 @@
 (() => {
   const clientID = 'u837pub66ryla2sfkh19iqp6rudq44';
-  const twitchChannelName = 'xqcow';
+  const twitchChannelName = 'nealguides';
 
   const searchChannelURL = `search/channels?query=${twitchChannelName}&first=1`
   const getUsersURL = 'users';
@@ -35,9 +35,9 @@
         }
 
         if (await isSubscribed(accessToken, userID, channelID)) {
-          console.log(`User is subscribed to ${twitchChannelName}.`);
+          alert(`User is subscribed to ${twitchChannelName}.`);
         } else {
-          console.log(`User is not subscribed ${twitchChannelName}.`);
+          alert(`User is not subscribed ${twitchChannelName}.`);
         }
 
       })();
